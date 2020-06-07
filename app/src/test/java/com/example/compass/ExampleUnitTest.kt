@@ -1,4 +1,4 @@
-package com.example.compas
+package com.example.compass
 
 import org.junit.Test
 

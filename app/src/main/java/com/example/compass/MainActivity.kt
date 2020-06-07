@@ -1,4 +1,4 @@
-package com.example.compas
+package com.example.compass
 
 import android.content.Context
 import android.content.pm.PackageManager

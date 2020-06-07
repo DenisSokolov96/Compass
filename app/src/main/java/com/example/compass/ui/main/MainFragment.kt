@@ -1,4 +1,4 @@
-package com.example.compas.ui.main
+package com.example.compass.ui.main
 
 import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
@@ -6,7 +6,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.example.compas.R
+import com.example.compass.R
 
 class MainFragment : Fragment() {
 

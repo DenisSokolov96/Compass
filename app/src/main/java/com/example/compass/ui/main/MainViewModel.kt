@@ -1,4 +1,4 @@
-package com.example.compas.ui.main
+package com.example.compass.ui.main
 
 import androidx.lifecycle.ViewModel
 
