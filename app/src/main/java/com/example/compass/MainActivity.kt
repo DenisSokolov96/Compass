@@ -2,6 +2,7 @@ package com.example.compass
 
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -15,6 +16,14 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.lifecycle.Transformations.map
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.PolylineOptions
 import kotlinx.android.synthetic.main.main_activity.*
 
 class MainActivity : AppCompatActivity(), LocationListener, SensorEventListener {
@@ -22,14 +31,19 @@ class MainActivity : AppCompatActivity(), LocationListener, SensorEventListener 
     private val REQUEST_LOCATION = 2
     private var sensorManager: SensorManager? = null
 
+    /***************/
+    lateinit var mapFragment: SupportMapFragment
+    lateinit var googleMap: GoogleMap
+    /***************/
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity)
-        /*if (savedInstanceState == null) {
-            supportFragmentManager.beginTransaction()
-                    .replace(R.id.container, MainFragment.newInstance())
-                    .commitNow()
-        }*/
+//        if (savedInstanceState == null) {
+//            supportFragmentManager.beginTransaction()
+//                    .replace(R.id.container, MainFragment.newInstance())
+//                    .commitNow()
+//        }
         setLocation()
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         startCompass()
@@ -47,12 +61,27 @@ class MainActivity : AppCompatActivity(), LocationListener, SensorEventListener 
           var locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
           val criteria = Criteria()
           val provider = locationManager.getProviders(criteria, false) //getBestProvider(criteria, false)
-          val location = locationManager.getLastKnownLocation(provider[0])
+          val location = locationManager.getLastKnownLocation(provider[1])
 
 
-          locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,1000,0f, this)
+          locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,1000,0f, this)
           if (location != null) {
               text_view_location.text = convertLocationToString(location.latitude, location.longitude)
+              /***************/
+              mapFragment = supportFragmentManager.findFragmentById(R.id.mapView) as SupportMapFragment
+              mapFragment.getMapAsync(OnMapReadyCallback {
+                  googleMap = it
+
+                  val location1 = LatLng(location.latitude, location.longitude)
+                  googleMap.addMarker(MarkerOptions().position(location1).title("Это Я."))
+                  googleMap!!.addPolyline(PolylineOptions().add(LatLng(location.latitude, location.longitude)).color(Color.RED))
+                  /*googleMap.addPolyline(PolylineOptions()
+                      .add(LatLng(location.latitude, location.longitude))
+                  .width(0f)
+                  .color(Color.RED))*/
+                  googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(location1, 10f))
+              })
+              /***************/
           }else{
                 Toast.makeText(this,"Location not available!",Toast.LENGTH_SHORT).show()
           }
