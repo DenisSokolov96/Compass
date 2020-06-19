@@ -12,24 +12,27 @@ import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.Transformations.map
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.*
+import com.google.android.gms.maps.model.CircleOptions
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
 import kotlinx.android.synthetic.main.main_activity.*
+import kotlinx.coroutines.newFixedThreadPoolContext
+import java.util.ArrayList
 
 class MainActivity : AppCompatActivity(), LocationListener, SensorEventListener {
 
     private val REQUEST_LOCATION = 2
     private var sensorManager: SensorManager? = null
+    private var list_track = ArrayList<String>()
+    private var list_GPS = ArrayList<LatLng>()
 
     /***************/
     lateinit var mapFragment: SupportMapFragment
@@ -39,14 +42,10 @@ class MainActivity : AppCompatActivity(), LocationListener, SensorEventListener 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity)
-//        if (savedInstanceState == null) {
-//            supportFragmentManager.beginTransaction()
-//                    .replace(R.id.container, MainFragment.newInstance())
-//                    .commitNow()
-//        }
         setLocation()
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         startCompass()
+
     }
 
     private fun setLocation() {
@@ -61,26 +60,31 @@ class MainActivity : AppCompatActivity(), LocationListener, SensorEventListener 
           var locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
           val criteria = Criteria()
           val provider = locationManager.getProviders(criteria, false) //getBestProvider(criteria, false)
-          val location = locationManager.getLastKnownLocation(provider[1])
+          val location = locationManager.getLastKnownLocation(provider[0])
 
 
-          locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,1000,0f, this)
+          locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,10000,5f, this)
           if (location != null) {
               text_view_location.text = convertLocationToString(location.latitude, location.longitude)
               /***************/
-              mapFragment = supportFragmentManager.findFragmentById(R.id.mapView) as SupportMapFragment
-              mapFragment.getMapAsync(OnMapReadyCallback {
-                  googleMap = it
+              if ( (list_GPS.size==0) || (list_GPS[list_GPS.size-1] != LatLng(location.latitude, location.longitude)) ){
+                  list_GPS.add( LatLng(location.latitude, location.longitude))
 
-                  val location1 = LatLng(location.latitude, location.longitude)
-                  googleMap.addMarker(MarkerOptions().position(location1).title("Это Я."))
-                  googleMap!!.addPolyline(PolylineOptions().add(LatLng(location.latitude, location.longitude)).color(Color.RED))
-                  /*googleMap.addPolyline(PolylineOptions()
-                      .add(LatLng(location.latitude, location.longitude))
-                  .width(0f)
-                  .color(Color.RED))*/
-                  googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(location1, 10f))
-              })
+                  mapFragment = supportFragmentManager.findFragmentById(R.id.mapView) as SupportMapFragment
+                  mapFragment.getMapAsync(OnMapReadyCallback {
+                      googleMap = it
+
+                      val location1 = LatLng(location.latitude, location.longitude)
+                      googleMap.addMarker(MarkerOptions().position(location1).title("Пункт - " + list_GPS.size.toString()))
+                      googleMap.addPolyline(PolylineOptions()
+                          .addAll(list_GPS)
+                          .width(5f)
+                          .color(Color.RED))
+
+                      googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(location1, 16f))
+                  })
+              }
+              Toast.makeText(this,list_GPS.get(list_GPS.size-1).toString() + " :" + list_GPS.size.toString(),Toast.LENGTH_SHORT).show()
               /***************/
           }else{
                 Toast.makeText(this,"Location not available!",Toast.LENGTH_SHORT).show()
@@ -170,18 +174,27 @@ class MainActivity : AppCompatActivity(), LocationListener, SensorEventListener 
                 azimuth = (Math.toDegrees(SensorManager.getOrientation(rotationMatrix,orientation)[0].toDouble())+360).toInt()%360
             }
             azimuth = Math.round(azimuth.toFloat())
+
             compass_image.rotation = (-azimuth).toFloat()
+
             val where = when(azimuth){
-                in 281..349 -> "NW"
+                in 281..349 -> "NW";
                 in 261..280 -> "W"
                 in 191..260 -> "SW"
                 in 171..190 -> "S"
                 in 101..170 -> "SE"
-                in 81..100 -> "E"
-                in 11..80 -> "NE"
+                in 81..100 ->  "E"
+                in 11..80 ->  "NE"
                 else -> "N"
             }
+            change_route(where)
             text_view_degree.text = "$azimuth*$where"
+    }
+
+    private fun change_route(where: String){
+        if ( (list_track.size==0) || (!list_track[list_track.size-1].equals(where) ) ){
+            list_track.add(where)
+        }
     }
 
     private var accelerometer: Sensor? = null

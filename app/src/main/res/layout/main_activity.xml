@@ -7,8 +7,32 @@
     tools:context="com.example.compass.MainActivity"
     android:orientation="vertical" >
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:orientation="horizontal">
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:id="@+id/text_view_location"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    orientation="vertical"
+                    android:textSize="20sp"
+                    android:gravity="center">
+                </androidx.appcompat.widget.AppCompatTextView>
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:id="@+id/text_view_degree"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    orientation="vertical"
+                    android:gravity="center"
+                    android:textSize="20sp">
+                </androidx.appcompat.widget.AppCompatTextView>
+        </LinearLayout>
 
-        <androidx.appcompat.widget.AppCompatTextView
+
+<!--        <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/text_view_location"
             android:layout_width="match_parent"
             android:layout_height="0dp"
@@ -22,13 +46,14 @@
             android:layout_height="0dp"
             android:layout_weight="1"
             android:gravity="center"
-            android:textSize="20sp" />
+            android:textSize="20sp" />-->
+
 
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/compass_image"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="6"
+            android:layout_weight="5"
             android:src="@drawable/compass"
             android:scaleType="fitCenter"/>
 
