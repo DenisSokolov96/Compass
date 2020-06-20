@@ -1,6 +1,7 @@
 package com.example.compass
 
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.hardware.Sensor
@@ -12,26 +13,28 @@ import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
-import android.widget.LinearLayout
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.lifecycle.Transformations.map
-import com.google.android.gms.maps.*
-import com.google.android.gms.maps.model.CircleOptions
+import com.example.compass.ui.main.StatisticActivity
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
 import kotlinx.android.synthetic.main.main_activity.*
-import kotlinx.coroutines.newFixedThreadPoolContext
-import java.util.ArrayList
+import java.util.*
 
 class MainActivity : AppCompatActivity(), LocationListener, SensorEventListener {
 
     private val REQUEST_LOCATION = 2
     private var sensorManager: SensorManager? = null
-    private var list_track = ArrayList<String>()
+    //private var list_track = ArrayList<String>()
     private var list_GPS = ArrayList<LatLng>()
 
     /***************/
@@ -47,6 +50,24 @@ class MainActivity : AppCompatActivity(), LocationListener, SensorEventListener 
         startCompass()
 
     }
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return true
+    }
+
+    //вызов StaticActivity
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_settings -> {
+                Toast.makeText(applicationContext, "статистика", Toast.LENGTH_LONG).show()
+                val intent = Intent(this, StatisticActivity::class.java)
+                intent.putExtra("list", list_GPS)
+                startActivity(intent)
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
 
     private fun setLocation() {
       if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
@@ -59,11 +80,9 @@ class MainActivity : AppCompatActivity(), LocationListener, SensorEventListener 
 
           var locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
           val criteria = Criteria()
-          val provider = locationManager.getProviders(criteria, false) //getBestProvider(criteria, false)
+          val provider = locationManager.getProviders(criteria, false) //locationManager.getBestProvider(criteria, false)
           val location = locationManager.getLastKnownLocation(provider[0])
 
-
-          locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,10000,5f, this)
           if (location != null) {
               text_view_location.text = convertLocationToString(location.latitude, location.longitude)
               /***************/
@@ -75,16 +94,17 @@ class MainActivity : AppCompatActivity(), LocationListener, SensorEventListener 
                       googleMap = it
 
                       val location1 = LatLng(location.latitude, location.longitude)
-                      googleMap.addMarker(MarkerOptions().position(location1).title("Пункт - " + list_GPS.size.toString()))
+                      googleMap.addMarker(MarkerOptions().position(location1).title("Точка - " + list_GPS.size.toString()))
                       googleMap.addPolyline(PolylineOptions()
                           .addAll(list_GPS)
                           .width(5f)
                           .color(Color.RED))
-
-                      googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(location1, 16f))
+                      googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(location1, 17f))
                   })
+                  Toast.makeText(this,list_GPS.get(list_GPS.size-1).toString() + " :" + list_GPS.size.toString(),Toast.LENGTH_SHORT).show()
+                  locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,20000,0f, this)
               }
-              Toast.makeText(this,list_GPS.get(list_GPS.size-1).toString() + " :" + list_GPS.size.toString(),Toast.LENGTH_SHORT).show()
+
               /***************/
           }else{
                 Toast.makeText(this,"Location not available!",Toast.LENGTH_SHORT).show()
@@ -187,14 +207,7 @@ class MainActivity : AppCompatActivity(), LocationListener, SensorEventListener 
                 in 11..80 ->  "NE"
                 else -> "N"
             }
-            change_route(where)
             text_view_degree.text = "$azimuth*$where"
-    }
-
-    private fun change_route(where: String){
-        if ( (list_track.size==0) || (!list_track[list_track.size-1].equals(where) ) ){
-            list_track.add(where)
-        }
     }
 
     private var accelerometer: Sensor? = null
