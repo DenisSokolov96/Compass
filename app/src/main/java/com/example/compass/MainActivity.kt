@@ -19,7 +19,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import com.example.compass.ui.main.StatisticActivity
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -34,7 +33,6 @@ class MainActivity : AppCompatActivity(), LocationListener, SensorEventListener 
 
     private val REQUEST_LOCATION = 2
     private var sensorManager: SensorManager? = null
-    //private var list_track = ArrayList<String>()
     private var list_GPS = ArrayList<LatLng>()
 
     /***************/
@@ -82,6 +80,7 @@ class MainActivity : AppCompatActivity(), LocationListener, SensorEventListener 
           val criteria = Criteria()
           val provider = locationManager.getProviders(criteria, false) //locationManager.getBestProvider(criteria, false)
           val location = locationManager.getLastKnownLocation(provider[0])
+
 
           if (location != null) {
               text_view_location.text = convertLocationToString(location.latitude, location.longitude)

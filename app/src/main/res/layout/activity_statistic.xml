@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="200dp"
-    tools:context=".ui.main.StatisticActivity"
+    tools:context=".StatisticActivity"
     android:orientation="vertical">
 
 
@@ -18,7 +18,7 @@
         android:gravity="left"/>
 
     <androidx.appcompat.widget.AppCompatTextView
-        android:id="@+id/text_time"
+        android:id="@+id/text_point"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
